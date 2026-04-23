@@ -5,7 +5,7 @@ import { CommandItem } from './CommandItem';
 interface CommandListProps {
   commands: CommandConfig[];
   onEdit: (command: CommandConfig) => void;
-  onDelete: (id: string) => void;
+  onDelete: (command: CommandConfig) => void;
 }
 
 export function CommandList({ commands, onEdit, onDelete }: CommandListProps) {

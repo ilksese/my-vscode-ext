@@ -4,7 +4,7 @@ import type { CommandConfig } from '../types';
 interface CommandItemProps {
   command: CommandConfig;
   onEdit: (command: CommandConfig) => void;
-  onDelete: (id: string) => void;
+  onDelete: (command: CommandConfig) => void;
 }
 
 const workingDirLabels: Record<string, string> = {
@@ -22,7 +22,7 @@ export function CommandItem({ command, onEdit, onDelete }: CommandItemProps) {
           <button className="btn-edit" onClick={() => onEdit(command)}>
             Edit
           </button>
-          <button className="btn-delete" onClick={() => onDelete(command.id)}>
+          <button className="btn-text-delete" onClick={() => onDelete(command)}>
             Delete
           </button>
         </div>
