@@ -5,6 +5,7 @@ import { timestamp, formatFile, formatStatus } from './output-channel';
 
 export class CommandExecutor {
   private process: ChildProcess | null = null;
+  private resolveFn: ((value: number | null) => void) | null = null;
 
   async execute(options: CommandExecutorOptions): Promise<number | null> {
     const {
@@ -36,18 +37,44 @@ export class CommandExecutor {
     const shellArgs = shellAdapter.getShellArgs();
 
     return new Promise((resolve, reject) => {
-      const child = spawn(shell, [...shellArgs, resolvedCommand], {
-        cwd,
-        shell: false,
-        env: process.env,
-      });
+      let settled = false;
+      const safeResolve = (val: number | null) => {
+        if (!settled) {
+          settled = true;
+          this.resolveFn = null;
+          resolve(val);
+        }
+      };
+      const safeReject = (err: Error) => {
+        if (!settled) {
+          settled = true;
+          this.resolveFn = null;
+          reject(err);
+        }
+      };
+
+      this.resolveFn = safeResolve;
+
+      let child: ChildProcess;
+      try {
+        child = spawn(shell, [...shellArgs, resolvedCommand], {
+          cwd,
+          shell: false,
+          env: process.env,
+        });
+      } catch (error: unknown) {
+        const err = error instanceof Error ? error : new Error(String(error));
+        onOutput?.({ type: 'stderr', message: `Spawn error: ${err.message}` });
+        safeReject(err);
+        return;
+      }
 
       this.process = child;
 
       const timeout = setTimeout(() => {
         child.kill('SIGTERM');
         onOutput?.({ type: 'status', message: formatStatus(null) });
-        resolve(null);
+        safeResolve(null);
       }, timeoutMs);
 
       child.stdout?.on('data', (data: Buffer) => {
@@ -61,27 +88,30 @@ export class CommandExecutor {
       child.on('error', (error: Error) => {
         clearTimeout(timeout);
         onOutput?.({ type: 'stderr', message: `Process error: ${error.message}` });
-        reject(error);
+        safeReject(error);
       });
 
       child.on('close', (code: number | null) => {
         clearTimeout(timeout);
         onOutput?.({ type: 'status', message: formatStatus(code) });
-        resolve(code);
+        safeResolve(code);
       });
 
       signal?.addEventListener('abort', () => {
         clearTimeout(timeout);
         child.kill('SIGTERM');
         onOutput?.({ type: 'status', message: formatStatus(null) });
-        resolve(null);
-      });
+        safeResolve(null);
+      }, { once: true });
     });
   }
 
   cancel(): void {
     if (this.process && !this.process.killed) {
       this.process.kill('SIGTERM');
+    }
+    if (this.resolveFn) {
+      this.resolveFn(null);
     }
   }
 }

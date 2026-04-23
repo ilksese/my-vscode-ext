@@ -1,0 +1,72 @@
+{
+  "name": "my-commands",
+  "displayName": "My Commands",
+  "description": "Custom command execution tool for VSCode",
+  "version": "0.0.1",
+  "private": true,
+  "publisher": "user",
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": [
+    "onView:myCommandsSidebar",
+    "onCommand:myCommands.runFromMenu"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "myCommands.runFromMenu",
+        "title": "My Commands"
+      },
+      {
+        "command": "myCommands.openSidebar",
+        "title": "Open My Commands"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "myCommands.runFromMenu",
+          "group": "myCommands",
+          "when": "editorFocus && resourceScheme == 'file'"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "myCommands",
+          "title": "My Commands",
+          "icon": "$(gear)"
+        }
+      ]
+    },
+    "views": {
+      "myCommands": [
+        {
+          "type": "webview",
+          "id": "myCommandsSidebar",
+          "name": "My Commands"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "build": "tsc --build && npm run build:webview",
+    "build:webview": "cd webview && vite build",
+    "dev": "tsc --watch",
+    "clean": "rm -rf out tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@suite/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@suite/tsconfig": "workspace:*",
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.60.0",
+    "typescript": "^5.5.0",
+    "@vscode/test-electron": "^2.3.0"
+  }
+}
