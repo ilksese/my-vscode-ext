@@ -54,8 +54,8 @@
     }
   },
   "scripts": {
-    "build": "tsc --build && npm run build:webview",
-    "build:webview": "cd webview && vite build",
+    "build": "tsc --build && pnpm run build:webview",
+    "build:webview": "cd webview && pnpm exec vite build",
     "dev": "tsc --watch",
     "clean": "rm -rf out tsconfig.tsbuildinfo"
   },
