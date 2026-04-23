@@ -57,16 +57,15 @@
     "build": "tsc --build && pnpm run build:webview",
     "build:webview": "cd webview && pnpm exec vite build",
     "dev": "tsc --watch",
-    "clean": "rm -rf out tsconfig.tsbuildinfo"
-  },
-  "dependencies": {
-    "@suite/core": "workspace:*"
+    "clean": "rm -rf out tsconfig.tsbuildinfo",
+    "package": "vsce package --no-dependencies"
   },
   "devDependencies": {
     "@suite/tsconfig": "workspace:*",
     "@types/node": "^20.0.0",
     "@types/vscode": "^1.60.0",
     "typescript": "^5.5.0",
-    "@vscode/test-electron": "^2.3.0"
+    "@vscode/test-electron": "^2.3.0",
+    "@vscode/vsce": "^3.3.0"
   }
 }

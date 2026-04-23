@@ -1,0 +1,14 @@
+src/
+webview/
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+.turbo/
+dist/
+out/webview/dist/
+**/*.d.ts
+**/*.js.map
+.vscode/
+**/*.tsbuildinfo
+
