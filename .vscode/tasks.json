@@ -1,0 +1,22 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "build",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": "$tsc",
+      "detail": "Build extension and webview"
+    },
+    {
+      "type": "npm",
+      "script": "dev",
+      "problemMatcher": "$tsc-watch",
+      "isBackground": true,
+      "detail": "Watch mode for TypeScript"
+    }
+  ]
+}

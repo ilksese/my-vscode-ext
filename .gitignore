@@ -1,4 +1,9 @@
 .vscode/
+!.vscode/launch.json
+!.vscode/tasks.json
+.opencode/
+.prd/
+opencode.json
 docs/superpowers/
 *.log
 dist/

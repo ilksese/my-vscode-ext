@@ -1,0 +1,29 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run Extension",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/apps/my-commands"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/apps/my-commands/out/**/*.js",
+        "${workspaceFolder}/apps/my-commands/out/webview/**/*.js"
+      ],
+      "preLaunchTask": "npm: build",
+      "env": {
+        "NODE_ENV": "development"
+      }
+    },
+    {
+      "name": "Debug Webview",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/apps/my-commands/webview/src",
+      "preLaunchTask": "npm: dev"
+    }
+  ]
+}
