@@ -19,7 +19,7 @@ export class CommandExecutor {
       signal,
     } = options;
 
-    const resolvedCommand = variableResolver.resolve(command, variableContext);
+    const resolvedCommand = variableResolver.resolve(command, variableContext, (v) => shellAdapter.escapePath(v));
     const ts = timestamp();
 
     onOutput?.({ type: 'info', message: `${ts} [Info] Executing: ${resolvedCommand}` });
@@ -57,7 +57,7 @@ export class CommandExecutor {
 
       let child: ChildProcess;
       try {
-        child = spawn(shell, [...shellArgs, shellAdapter.escapeCommand(resolvedCommand)], {
+        child = spawn(shell, [...shellArgs, resolvedCommand], {
           cwd,
           shell: false,
           env: process.env,

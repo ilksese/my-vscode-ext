@@ -4,13 +4,11 @@ import type { VariableContext, VariableStrategy } from '../types';
 export class VariableResolver {
   private strategies: Map<string, VariableStrategy> = new Map();
 
-  constructor() {}
-
   register(strategy: VariableStrategy): void {
     this.strategies.set(strategy.name, strategy);
   }
 
-  resolve(command: string, context: VariableContext): string {
+  resolve(command: string, context: VariableContext, escapeFn?: (value: string) => string): string {
     const hasVariables = /\$\{[^}]+\}/.test(command);
 
     if (!hasVariables) {
@@ -19,7 +17,8 @@ export class VariableResolver {
         try {
           const relativePath = path.relative(context.workspaceRootPath, context.fileAbsolutePath);
           if (relativePath) {
-            return `${command} ${relativePath}`;
+            const escaped = escapeFn ? escapeFn(relativePath) : relativePath;
+            return `${command} ${escaped}`;
           }
         } catch {
           // Cannot resolve relativeFile, return command unchanged
@@ -37,7 +36,7 @@ export class VariableResolver {
       if (resolved === undefined) {
         throw new Error(`Cannot resolve \${${name}}: no active file or workspace`);
       }
-      return resolved;
+      return escapeFn ? escapeFn(resolved) : resolved;
     });
   }
 }
