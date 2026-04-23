@@ -1,0 +1,224 @@
+:root {
+  --vscode-font-family: var(--vscode-font-family, -apple-system, BlinkMacSystemFont, sans-serif);
+  --vscode-foreground: var(--vscode-foreground, #cccccc);
+  --vscode-editor-background: var(--vscode-editor-background, #1e1e1e);
+  --vscode-button-background: var(--vscode-button-background, #0e639c);
+  --vscode-button-foreground: var(--vscode-button-foreground, #ffffff);
+  --vscode-input-background: var(--vscode-input-background, #3c3c3c);
+  --vscode-input-foreground: var(--vscode-input-foreground, #cccccc);
+  --vscode-input-border: var(--vscode-input-border, #3c3c3c);
+  --vscode-list-activeSelectionBackground: var(--vscode-list-activeSelectionBackground, #04395e);
+  --vscode-badge-background: var(--vscode-badge-background, #4d78cc);
+  --vscode-badge-foreground: var(--vscode-badge-foreground, #ffffff);
+  --vscode-descriptionForeground: var(--vscode-descriptionForeground, #999999);
+  --vscode-errorForeground: var(--vscode-errorForeground, #f48771);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--vscode-font-family);
+  color: var(--vscode-foreground);
+  background-color: var(--vscode-editor-background);
+  font-size: 13px;
+  padding: 12px;
+}
+
+.container {
+  max-width: 100%;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--vscode-input-border);
+}
+
+.header h2 {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.add-btn {
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  border: none;
+  padding: 4px 12px;
+  cursor: pointer;
+  font-size: 12px;
+  border-radius: 2px;
+}
+
+.add-btn:hover {
+  opacity: 0.9;
+}
+
+.command-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.command-item {
+  background: var(--vscode-input-background);
+  border: 1px solid var(--vscode-input-border);
+  border-radius: 3px;
+  padding: 10px;
+}
+
+.command-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.command-name {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.command-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-edit,
+.btn-delete {
+  border: none;
+  padding: 2px 8px;
+  cursor: pointer;
+  font-size: 11px;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--vscode-foreground);
+}
+
+.btn-edit:hover {
+  background: var(--vscode-button-background);
+}
+
+.btn-delete:hover {
+  color: var(--vscode-errorForeground);
+}
+
+.command-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.command-cmd {
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 12px;
+  color: var(--vscode-descriptionForeground);
+  word-break: break-all;
+}
+
+.command-cwd {
+  font-size: 11px;
+  color: var(--vscode-descriptionForeground);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--vscode-descriptionForeground);
+}
+
+.hint {
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+.command-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  background: var(--vscode-input-background);
+  border-radius: 3px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-group label {
+  font-weight: 500;
+  font-size: 12px;
+}
+
+.form-group input,
+.form-group select {
+  background: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+  border: 1px solid var(--vscode-input-border);
+  padding: 6px 8px;
+  font-size: 13px;
+  font-family: var(--vscode-font-family);
+  border-radius: 2px;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: 1px solid var(--vscode-button-background);
+  border-color: var(--vscode-button-background);
+}
+
+.form-group input.error {
+  border-color: var(--vscode-errorForeground);
+}
+
+.error-text {
+  color: var(--vscode-errorForeground);
+  font-size: 11px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.btn-primary {
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  border: none;
+  padding: 6px 16px;
+  cursor: pointer;
+  font-size: 13px;
+  border-radius: 2px;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--vscode-foreground);
+  border: 1px solid var(--vscode-input-border);
+  padding: 6px 16px;
+  cursor: pointer;
+  font-size: 13px;
+  border-radius: 2px;
+}
+
+.loading {
+  text-align: center;
+  padding: 32px;
+  color: var(--vscode-descriptionForeground);
+}
+
+.error {
+  color: var(--vscode-errorForeground);
+  text-align: center;
+  padding: 16px;
+}

@@ -1,8 +1,4 @@
 {
   "extends": "@suite/tsconfig/react.json",
-  "compilerOptions": {
-    "rootDir": "src",
-    "noEmit": true
-  },
   "include": ["src/**/*.ts", "src/**/*.tsx", "vite.config.ts"]
 }

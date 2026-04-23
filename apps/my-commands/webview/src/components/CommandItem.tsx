@@ -1,0 +1,36 @@
+import React from 'react';
+import type { CommandConfig } from '../types';
+
+interface CommandItemProps {
+  command: CommandConfig;
+  onEdit: (command: CommandConfig) => void;
+  onDelete: (id: string) => void;
+}
+
+const workingDirLabels: Record<string, string> = {
+  workspaceRoot: 'Workspace Root',
+  fileDir: 'File Directory',
+  custom: 'Custom',
+};
+
+export function CommandItem({ command, onEdit, onDelete }: CommandItemProps) {
+  return (
+    <div className="command-item">
+      <div className="command-header">
+        <span className="command-name">{command.displayName}</span>
+        <div className="command-actions">
+          <button className="btn-edit" onClick={() => onEdit(command)}>
+            Edit
+          </button>
+          <button className="btn-delete" onClick={() => onDelete(command.id)}>
+            Delete
+          </button>
+        </div>
+      </div>
+      <div className="command-details">
+        <code className="command-cmd">{command.command}</code>
+        <span className="command-cwd">CWD: {workingDirLabels[command.workingDir] || command.workingDir}</span>
+      </div>
+    </div>
+  );
+}
