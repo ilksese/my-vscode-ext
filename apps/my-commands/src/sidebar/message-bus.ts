@@ -13,7 +13,7 @@ export type VscodeMessage =
   | { type: 'ERROR'; payload: { message: string } };
 
 export class SidebarMessageBus {
-  private webviewPanel: vscode.WebviewView | null = null;
+  private webviewView: vscode.WebviewView | null = null;
   private storageKey: string;
   private context: vscode.ExtensionContext;
 
@@ -23,7 +23,7 @@ export class SidebarMessageBus {
   }
 
   setWebview(webview: vscode.WebviewView): void {
-    this.webviewPanel = webview;
+    this.webviewView = webview;
   }
 
   getCommands(): CommandConfig[] {
@@ -72,9 +72,13 @@ export class SidebarMessageBus {
     }
   }
 
+  dispose(): void {
+    this.webviewView = null;
+  }
+
   private postMessage(message: VscodeMessage): void {
-    if (this.webviewPanel) {
-      this.webviewPanel.webview.postMessage(message);
+    if (this.webviewView) {
+      this.webviewView.webview.postMessage(message);
     }
   }
 }

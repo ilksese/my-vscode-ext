@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { SidebarMessageBus } from './message-bus';
+import { SidebarMessageBus, type WebviewMessage } from './message-bus';
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'myCommandsSidebar';
@@ -19,6 +19,9 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     _context: vscode.WebviewViewResolveContext,
     _token: vscode.CancellationToken
   ): void | Thenable<void> {
+    if (this.view) {
+      return;
+    }
     this.view = webviewView;
     this.messageBus.setWebview(webviewView);
 
@@ -31,8 +34,15 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
     webviewView.webview.html = this.getHtml(webviewView.webview);
 
-    webviewView.webview.onDidReceiveMessage((message) => {
-      this.messageBus.handleMessage(message);
+    webviewView.webview.onDidReceiveMessage((message: unknown) => {
+      if (typeof message !== 'object' || message === null || !('type' in message)) {
+        return;
+      }
+      this.messageBus.handleMessage(message as WebviewMessage);
+    });
+
+    webviewView.onDidDispose(() => {
+      this.messageBus.dispose();
     });
 
     this.messageBus.sendCommandsList();
