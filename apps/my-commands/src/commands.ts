@@ -107,7 +107,10 @@ async function executeCommand(
       });
 
       try {
-        return executor.execute({
+        let hasStdout = false;
+        let hasStderr = false;
+
+        await executor.execute({
           command: config.command,
           workingDirectory: variableContext.cwd,
           shellAdapter,
@@ -116,9 +119,36 @@ async function executeCommand(
           timeoutMs: 30000,
           signal: abortController.signal,
           onOutput: (event) => {
-            channel.appendLine(event.message);
+            switch (event.type) {
+              case 'stdout':
+                if (!hasStdout) {
+                  channel.appendLine('--- stdout ---');
+                  hasStdout = true;
+                }
+                channel.appendLine(event.message);
+                break;
+              case 'stderr':
+                if (!hasStderr) {
+                  channel.appendLine('--- stderr ---');
+                  hasStderr = true;
+                }
+                channel.appendLine(event.message);
+                break;
+              case 'info':
+                channel.appendLine(event.message);
+                break;
+              case 'status':
+                channel.appendLine('---');
+                channel.appendLine(event.message);
+                break;
+            }
           },
         });
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        channel.appendLine(`[Error]: ${message}`);
+        vscode.window.showErrorMessage(`Command failed: ${message}`);
+        throw error;
       } finally {
         cancellationDisposable.dispose();
       }

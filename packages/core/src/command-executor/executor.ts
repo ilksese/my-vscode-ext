@@ -57,7 +57,7 @@ export class CommandExecutor {
 
       let child: ChildProcess;
       try {
-        child = spawn(shell, [...shellArgs, resolvedCommand], {
+        child = spawn(shell, [...shellArgs, shellAdapter.escapeCommand(resolvedCommand)], {
           cwd,
           shell: false,
           env: process.env,

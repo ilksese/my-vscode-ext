@@ -8,6 +8,10 @@ export class UnixShellAdapter implements ShellAdapter {
     return p;
   }
 
+  escapeCommand(command: string): string {
+    return "'" + command.replace(/'/g, "'\\''") + "'";
+  }
+
   getShell(): string {
     return 'zsh';
   }

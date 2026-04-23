@@ -9,6 +9,10 @@ export class WindowsShellAdapter implements ShellAdapter {
     return p;
   }
 
+  escapeCommand(command: string): string {
+    return '"' + command.replace(/"/g, '`"') + '"';
+  }
+
   getShell(): string {
     return 'powershell';
   }
