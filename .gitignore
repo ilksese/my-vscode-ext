@@ -1,10 +1,7 @@
 .vscode/
-.prd/
 docs/superpowers/
-test/
 *.log
-output/
 dist/
 node_modules/
-.opencode/
-opencode.json
+out/
+.env.*
