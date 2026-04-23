@@ -103,4 +103,15 @@ describe('VariableResolver default behavior', () => {
     const noFileContext = { workspaceRootPath: '/Users/dev/project', cwd: '/Users/dev/project' };
     expect(() => resolver.resolve('echo ${file}', noFileContext)).toThrow('No active file');
   });
+
+  it('auto-appends correct relative path when workspace root is prefix substring', () => {
+    const resolver = createResolver();
+    const edgeContext = {
+      fileAbsolutePath: '/Users/dev/project-old/file.txt',
+      workspaceRootPath: '/Users/dev/project',
+      cwd: '/Users/dev/project',
+    };
+    const result = resolver.resolve('echo', edgeContext);
+    expect(result).toBe('echo ../project-old/file.txt');
+  });
 });

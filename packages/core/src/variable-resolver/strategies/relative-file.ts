@@ -1,4 +1,5 @@
 import type { VariableStrategy, VariableContext } from '../../types';
+import path from 'node:path';
 
 export class RelativeFileStrategy implements VariableStrategy {
   name = 'relativeFile';
@@ -7,9 +8,6 @@ export class RelativeFileStrategy implements VariableStrategy {
     if (!context.fileAbsolutePath || !context.workspaceRootPath) {
       throw new Error('No active file or workspace');
     }
-    const prefix = context.workspaceRootPath.endsWith('/')
-      ? context.workspaceRootPath
-      : context.workspaceRootPath + '/';
-    return context.fileAbsolutePath.replace(prefix, '');
+    return path.relative(context.workspaceRootPath, context.fileAbsolutePath);
   }
 }

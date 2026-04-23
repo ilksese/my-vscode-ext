@@ -1,3 +1,4 @@
+import path from 'node:path';
 import type { VariableContext, VariableStrategy } from '../types';
 
 export class VariableResolver {
@@ -12,9 +13,19 @@ export class VariableResolver {
   resolve(command: string, context: VariableContext): string {
     const hasVariables = /\$\{[^}]+\}/.test(command);
 
-    if (!hasVariables && context.fileAbsolutePath && context.workspaceRootPath) {
-      const relativePath = context.fileAbsolutePath.replace(context.workspaceRootPath + '/', '');
-      return `${command} ${relativePath}`;
+    if (!hasVariables) {
+      const relativeStrategy = this.strategies.get('relativeFile');
+      if (relativeStrategy && context.workspaceRootPath && context.fileAbsolutePath) {
+        try {
+          const relativePath = path.relative(context.workspaceRootPath, context.fileAbsolutePath);
+          if (relativePath) {
+            return `${command} ${relativePath}`;
+          }
+        } catch {
+          // Cannot resolve relativeFile, return command unchanged
+        }
+      }
+      return command;
     }
 
     return command.replace(/\$\{([^}]+)\}/g, (_match, name: string) => {
