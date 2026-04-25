@@ -1,4 +1,5 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'preact/hooks';
+import type { JSX } from 'preact';
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -31,7 +32,7 @@ export function ConfirmDialog({
     }
   }, [open]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: JSX.TargetedKeyboardEvent<HTMLDialogElement>) => {
     if (e.key === 'Escape') {
       onCancel();
     }

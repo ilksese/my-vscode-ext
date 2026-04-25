@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'preact/hooks';
 import type { CommandConfig, VscodeMessage } from '../types';
 import { postMessage, onMessage } from '../utils/vscode';
 

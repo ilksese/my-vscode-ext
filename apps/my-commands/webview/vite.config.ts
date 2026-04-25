@@ -1,19 +1,27 @@
 import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
 import path from 'path';
 
 export default defineConfig({
-  plugins: [react()],
+  resolve: {
+    alias: {
+      react: 'preact/compat',
+      'react-dom': 'preact/compat',
+    },
+  },
   build: {
-    outDir: path.resolve(__dirname, '../out/webview'),
+    outDir: path.resolve(__dirname, '../dist/webview'),
+    minify: false,
+    target: 'esnext',
     emptyOutDir: true,
     sourcemap: false,
-    rollupOptions: {
+    rolldownOptions: {
       output: {
         entryFileNames: 'assets/[name].js',
         chunkFileNames: 'assets/[name].js',
         assetFileNames: 'assets/[name].[ext]',
       },
     },
+    assetsInclude: ['**/*.css'],
   },
+  base: './',
 });

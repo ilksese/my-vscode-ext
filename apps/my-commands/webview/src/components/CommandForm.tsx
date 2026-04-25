@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { useState } from 'preact/hooks';
+import type { JSX } from 'preact';
 import type { CommandConfig } from '../types';
 
 interface CommandFormProps {
@@ -32,7 +33,7 @@ export function CommandForm({ command, onSave, onCancel }: CommandFormProps) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: JSX.TargetedEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!validate()) return;
 
@@ -55,7 +56,7 @@ export function CommandForm({ command, onSave, onCancel }: CommandFormProps) {
           id="displayName"
           type="text"
           value={displayName}
-          onChange={(e) => setDisplayName(e.target.value)}
+          onChange={(e) => setDisplayName((e.target as HTMLInputElement).value)}
           placeholder="e.g., Build TypeScript"
           className={errors.displayName ? 'error' : ''}
         />
@@ -68,7 +69,7 @@ export function CommandForm({ command, onSave, onCancel }: CommandFormProps) {
           id="command"
           type="text"
           value={cmd}
-          onChange={(e) => setCmd(e.target.value)}
+          onChange={(e) => setCmd((e.target as HTMLInputElement).value)}
           placeholder="e.g., tsc ${file}"
           className={errors.command ? 'error' : ''}
         />
@@ -80,7 +81,7 @@ export function CommandForm({ command, onSave, onCancel }: CommandFormProps) {
         <select
           id="workingDir"
           value={workingDir}
-          onChange={(e) => setWorkingDir(e.target.value as CommandConfig['workingDir'])}
+          onChange={(e) => setWorkingDir((e.target as HTMLSelectElement).value as CommandConfig['workingDir'])}
         >
           <option value="workspaceRoot">Workspace Root</option>
           <option value="fileDir">File Directory</option>
@@ -95,7 +96,7 @@ export function CommandForm({ command, onSave, onCancel }: CommandFormProps) {
             id="customWorkingDir"
             type="text"
             value={customWorkingDir}
-            onChange={(e) => setCustomWorkingDir(e.target.value)}
+            onChange={(e) => setCustomWorkingDir((e.target as HTMLInputElement).value)}
             placeholder="/absolute/path"
             className={errors.customWorkingDir ? 'error' : ''}
           />

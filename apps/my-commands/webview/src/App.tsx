@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'preact/hooks';
 import { useVscodeMessaging } from './hooks/useVscodeMessaging';
 import { CommandList } from './components/CommandList';
 import { CommandForm } from './components/CommandForm';

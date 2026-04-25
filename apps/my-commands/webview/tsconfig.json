@@ -1,8 +1,14 @@
 {
-  "extends": "@suite/tsconfig/react.json",
+  "extends": "@suite/tsconfig/base.json",
   "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "noEmit": true,
-    "rootDir": "src"
+    "rootDir": "src",
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"]
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"]
 }

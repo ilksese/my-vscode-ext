@@ -1,4 +1,3 @@
-import React from 'react';
 import type { CommandConfig } from '../types';
 
 interface CommandItemProps {
