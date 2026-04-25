@@ -5,6 +5,7 @@
 .prd/
 opencode.json
 docs/superpowers/
+.superpowers/
 *.log
 dist/
 node_modules/
