@@ -1,11 +1,15 @@
 {
   "extends": "@suite/tsconfig/base.json",
   "compilerOptions": {
-    "outDir": "out",
-    "rootDir": "src",
+    "target": "esnext",
+    "outDir": "dist",
+    // "rootDir": "src",
     "types": ["node", "vscode"],
     "declarationMap": false,
-    "sourceMap": false
+    "sourceMap": false,
+    "paths": {
+      "@suite/core": ["../../packages/core/src"]
+    }
   },
   "include": ["src/**/*.ts"],
   "references": [{ "path": "../../packages/core" }]

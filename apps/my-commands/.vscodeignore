@@ -5,8 +5,8 @@ package-lock.json
 yarn.lock
 pnpm-lock.yaml
 .turbo/
-dist/
-out/webview/dist/
+AGENT.md
+GUIDE.md
 **/*.d.ts
 **/*.js.map
 .vscode/
