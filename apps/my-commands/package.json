@@ -5,6 +5,10 @@
   "version": "0.0.1",
   "private": true,
   "publisher": "user",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ilksese/my-vscode-ext"
+  },
   "engines": {
     "vscode": "^1.60.0"
   },
