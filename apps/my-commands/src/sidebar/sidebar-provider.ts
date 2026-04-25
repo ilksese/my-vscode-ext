@@ -14,62 +14,44 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     this.messageBus = new SidebarMessageBus(context, 'myCommands.config');
   }
 
-  resolveWebviewView(
+  async resolveWebviewView(
     webviewView: vscode.WebviewView,
     _context: vscode.WebviewViewResolveContext,
     _token: vscode.CancellationToken
-  ): void | Thenable<void> {
-    if (this.view) {
-      return;
-    }
+  ): Promise<void> {
     this.view = webviewView;
-    this.messageBus.setWebview(webviewView);
-
+    
+    const webviewPath = vscode.Uri.joinPath(this.extensionUri, 'dist', 'webview');
+    
     webviewView.webview.options = {
       enableScripts: true,
-      localResourceRoots: [
-        vscode.Uri.joinPath(this.extensionUri, 'out', 'webview'),
-      ],
+      localResourceRoots: [webviewPath],
     };
 
-    webviewView.webview.html = this.getHtml(webviewView.webview);
+    const htmlPath = vscode.Uri.joinPath(webviewPath, 'index.html');
+    const htmlBytes = await vscode.workspace.fs.readFile(htmlPath);
+    let htmlContent = new TextDecoder().decode(htmlBytes);
+
+    // 转换资源路径为 webview 可访问的 URI
+    const baseUri = webviewView.webview.asWebviewUri(webviewPath);
+    htmlContent = htmlContent
+      .replace(/src="\.\//g, `src="${baseUri}/`)
+      .replace(/href="\.\//g, `href="${baseUri}/`);
+
+    webviewView.webview.html = htmlContent;
 
     webviewView.webview.onDidReceiveMessage((message: unknown) => {
-      if (typeof message !== 'object' || message === null || !('type' in message)) {
-        return;
+      if (typeof message === 'object' && message !== null && 'type' in message) {
+        this.messageBus.handleMessage(message as WebviewMessage);
       }
-      this.messageBus.handleMessage(message as WebviewMessage);
     });
 
     webviewView.onDidDispose(() => {
       this.messageBus.dispose();
     });
 
+    this.messageBus.setWebview(webviewView);
     this.messageBus.sendCommandsList();
-  }
-
-  private getHtml(webview: vscode.Webview): string {
-    const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this.extensionUri, 'out', 'webview', 'assets', 'index.js')
-    );
-    const styleUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this.extensionUri, 'out', 'webview', 'assets', 'index.css')
-    );
-
-    return `<!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src ${webview.cspSource};">
-        <link href="${styleUri}" rel="stylesheet">
-        <title>My Commands</title>
-      </head>
-      <body>
-        <div id="root"></div>
-        <script type="module" src="${scriptUri}"></script>
-      </body>
-      </html>`;
   }
 
   public refresh(): void {
