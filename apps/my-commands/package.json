@@ -39,7 +39,7 @@
         {
           "id": "myCommands",
           "title": "My Commands",
-          "icon": "$(gear)"
+          "icon": "media/icon.svg"
         }
       ]
     },

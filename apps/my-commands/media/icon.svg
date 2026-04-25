@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <!-- Lightning bolt - represents fast/quick execution -->
+  <path d="M18 3L7 16h8l-2 13 12-16H17z" fill="currentColor"/>
+  <!-- Command prompt > - represents terminal command -->
+  <path d="M24 20l5-4-5-4" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
