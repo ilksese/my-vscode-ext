@@ -7,6 +7,7 @@ opencode.json
 docs/superpowers/
 .superpowers/
 *.log
+*.vsix
 dist/
 node_modules/
 out/
