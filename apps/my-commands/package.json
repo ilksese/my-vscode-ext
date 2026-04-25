@@ -4,7 +4,7 @@
   "description": "Custom command execution tool for VSCode",
   "version": "0.0.1",
   "private": true,
-  "publisher": "user",
+  "publisher": "ilksese",
   "repository": {
     "type": "git",
     "url": "https://github.com/ilksese/my-vscode-ext"
