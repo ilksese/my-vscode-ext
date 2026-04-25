@@ -10,7 +10,6 @@ docs/superpowers/
 *.vsix
 dist/
 node_modules/
-out/
 .env.*
 .turbo/
 *.tsbuildinfo
