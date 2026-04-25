@@ -21,7 +21,6 @@
     "@types/react-dom": "^19.2.3",
     "@types/vscode-webview": "^1.57.5",
     "@vscode/test-electron": "^2.5.2",
-    "@vscode/vsce": "^3.9.1",
     "turbo": "^2.9.6",
     "typescript": "^6.0.3",
     "vitest": "^4.1.5"

@@ -12,7 +12,9 @@
   "engines": {
     "vscode": "^1.85.0"
   },
-  "categories": ["Other"],
+  "categories": [
+    "Other"
+  ],
   "activationEvents": [
     "onView:myCommandsSidebar",
     "onCommand:myCommands.runFromMenu"
@@ -69,8 +71,7 @@
     "@suite/tsconfig": "workspace:*",
     "@types/node": "^20.0.0",
     "@types/vscode": "^1.60.0",
-    "typescript": "^5.5.0",
     "@vscode/test-electron": "^2.3.0",
-    "@vscode/vsce": "^3.3.0"
+    "typescript": "^5.5.0"
   }
 }
