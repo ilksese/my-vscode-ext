@@ -61,6 +61,7 @@
     "package": "vsce package --no-dependencies"
   },
   "devDependencies": {
+    "@suite/core": "workspace:*",
     "@suite/tsconfig": "workspace:*",
     "@types/node": "^20.0.0",
     "@types/vscode": "^1.60.0",

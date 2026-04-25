@@ -10,12 +10,19 @@
     "test": "turbo test",
     "clean": "turbo clean"
   },
-  "packageManager": "pnpm@9.15.9",
+  "packageManager": "pnpm@10.22.0",
   "engines": {
     "node": ">=18.0.0"
   },
   "devDependencies": {
+    "@types/node": "^25.6.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@types/vscode-webview": "^1.57.5",
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^3.9.1",
     "turbo": "^2.9.6",
-    "typescript": "^5.5.0"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.5"
   }
 }
