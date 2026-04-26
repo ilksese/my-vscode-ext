@@ -2,6 +2,7 @@
   --vscode-font-family: var(--vscode-font-family, -apple-system, BlinkMacSystemFont, sans-serif);
   --vscode-foreground: var(--vscode-foreground, #cccccc);
   --vscode-editor-background: var(--vscode-editor-background, #1e1e1e);
+  --vscode-sideBar-background: var(--vscode-sideBar-background, #252526);
   --vscode-button-background: var(--vscode-button-background, #0e639c);
   --vscode-button-foreground: var(--vscode-button-foreground, #ffffff);
   --vscode-input-background: var(--vscode-input-background, #3c3c3c);
@@ -23,7 +24,7 @@
 body {
   font-family: var(--vscode-font-family);
   color: var(--vscode-foreground);
-  background-color: var(--vscode-editor-background);
+  background-color: var(--vscode-sideBar-background);
   font-size: 13px;
   padding: 12px;
 }
