@@ -9,8 +9,9 @@
     "lint": "turbo lint",
     "test": "turbo test",
     "clean": "turbo clean",
-    "package:my-commands": "pnpm --filter=my-commands run package",
-    "publish:my-commands": "cd apps/my-commands && pnpm vsce publish"
+    "build:my-commands": "turbo run build --filter=my-commands",
+    "package:my-commands": "turbo run package --filter=my-commands",
+    "publish:my-commands": "turbo run publish --filter=my-commands"
   },
   "packageManager": "pnpm@10.22.0",
   "engines": {

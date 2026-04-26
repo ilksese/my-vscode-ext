@@ -6,6 +6,13 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
     },
+    "package": {
+      "dependsOn": ["build"],
+      "outputs": ["*.vsix"]
+    },
+    "publish": {
+      "dependsOn": ["package"]
+    },
     "lint": {
       "dependsOn": ["^build"]
     },

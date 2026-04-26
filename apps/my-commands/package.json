@@ -64,7 +64,8 @@
     "build:webview": "cd webview && pnpm exec vite build",
     "dev": "tsc --watch",
     "clean": "rm -rf out tsconfig.tsbuildinfo",
-    "package": "vsce package --no-dependencies"
+    "package": "vsce package --no-dependencies",
+    "publish": "vsce publish --packagePath $(ls -t *.vsix | head -1)"
   },
   "devDependencies": {
     "@suite/tsconfig": "workspace:*",
