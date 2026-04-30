@@ -286,6 +286,70 @@ body {
   opacity: 0.85;
 }
 
+.command-input-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.command-input-row input {
+  flex: 1;
+}
+
+.btn-insert {
+  background: var(--vscode-badge-background);
+  color: var(--vscode-badge-foreground);
+  border: none;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 12px;
+  border-radius: 2px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.btn-insert:hover {
+  opacity: 0.85;
+}
+
+.var-picker-dropdown {
+  background: var(--vscode-input-background);
+  border: 1px solid var(--vscode-input-border);
+  border-radius: 3px;
+  margin-top: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.var-picker-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 6px 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--vscode-foreground);
+  font-size: 12px;
+}
+
+.var-picker-item:hover {
+  background: var(--vscode-list-activeSelectionBackground);
+}
+
+.var-picker-item code {
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 12px;
+  color: var(--vscode-input-foreground);
+  font-weight: 500;
+}
+
+.var-picker-item span {
+  color: var(--vscode-descriptionForeground);
+  font-size: 11px;
+}
+
 .header-actions {
   display: flex;
   gap: 6px;

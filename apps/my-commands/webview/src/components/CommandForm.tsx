@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import { useState, useRef, useEffect } from 'preact/hooks';
 import type { JSX } from 'preact';
 import type { CommandConfig } from '../types';
 
@@ -12,6 +12,16 @@ function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 9);
 }
 
+const insertableVariables = [
+  { name: '${file}', label: 'File path' },
+  { name: '${fileDirname}', label: 'File directory' },
+  { name: '${fileBasename}', label: 'File name (with ext)' },
+  { name: '${fileBasenameNoExtension}', label: 'File name (no ext)' },
+  { name: '${relativeFile}', label: 'Relative file path' },
+  { name: '${workspaceFolder}', label: 'Workspace folder' },
+  { name: '${cwd}', label: 'Current working directory' },
+];
+
 export function CommandForm({ command, onSave, onCancel }: CommandFormProps) {
   const [displayName, setDisplayName] = useState(command?.displayName || '');
   const [cmd, setCmd] = useState(command?.command || '');
@@ -20,6 +30,47 @@ export function CommandForm({ command, onSave, onCancel }: CommandFormProps) {
   );
   const [customWorkingDir, setCustomWorkingDir] = useState(command?.customWorkingDir || '');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showVarPicker, setShowVarPicker] = useState(false);
+  const [cursorPos, setCursorPos] = useState<number | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showVarPicker) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node) &&
+        inputRef.current &&
+        !inputRef.current.contains(e.target as Node)
+      ) {
+        setShowVarPicker(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showVarPicker]);
+
+  const handleCommandInputClick = () => {
+    if (inputRef.current) {
+      setCursorPos(inputRef.current.selectionStart ?? cmd.length);
+    }
+  };
+
+  const handleInsertVariable = (variable: string) => {
+    const pos = cursorPos ?? cmd.length;
+    const newVal = cmd.slice(0, pos) + variable + cmd.slice(pos);
+    setCmd(newVal);
+    setShowVarPicker(false);
+    setTimeout(() => {
+      if (inputRef.current) {
+        const newPos = pos + variable.length;
+        inputRef.current.focus();
+        inputRef.current.setSelectionRange(newPos, newPos);
+      }
+    }, 0);
+  };
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -65,14 +116,41 @@ export function CommandForm({ command, onSave, onCancel }: CommandFormProps) {
 
       <div className="form-group">
         <label htmlFor="command">Command</label>
-        <input
-          id="command"
-          type="text"
-          value={cmd}
-          onChange={(e) => setCmd((e.target as HTMLInputElement).value)}
-          placeholder="e.g., tsc ${file}"
-          className={errors.command ? 'error' : ''}
-        />
+        <div className="command-input-row">
+          <input
+            id="command"
+            type="text"
+            ref={inputRef}
+            value={cmd}
+            onChange={(e) => setCmd((e.target as HTMLInputElement).value)}
+            onClick={handleCommandInputClick}
+            placeholder="e.g., tsc ${file}"
+            className={errors.command ? 'error' : ''}
+          />
+          <button
+            type="button"
+            className="btn-insert"
+            onClick={() => setShowVarPicker((v) => !v)}
+            aria-label="Insert variable"
+          >
+            插入
+          </button>
+        </div>
+        {showVarPicker && (
+          <div ref={dropdownRef} className="var-picker-dropdown">
+            {insertableVariables.map((v) => (
+              <button
+                key={v.name}
+                type="button"
+                className="var-picker-item"
+                onClick={() => handleInsertVariable(v.name)}
+              >
+                <code>{v.name}</code>
+                <span>{v.label}</span>
+              </button>
+            ))}
+          </div>
+        )}
         {errors.command && <span className="error-text">{errors.command}</span>}
       </div>
 
