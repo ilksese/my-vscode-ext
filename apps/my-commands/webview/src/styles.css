@@ -92,7 +92,8 @@ body {
 }
 
 .btn-edit,
-.btn-delete {
+.btn-text-delete,
+.btn-run {
   border: none;
   padding: 2px 8px;
   cursor: pointer;
@@ -102,8 +103,10 @@ body {
   color: var(--vscode-foreground);
 }
 
-.btn-edit:hover {
+.btn-edit:hover,
+.btn-run:hover {
   background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
 }
 
 .btn-text-delete {

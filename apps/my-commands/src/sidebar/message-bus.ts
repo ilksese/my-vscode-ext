@@ -4,7 +4,8 @@ import type { CommandConfig } from '@suite/core';
 export type WebviewMessage =
   | { type: 'GET_COMMANDS' }
   | { type: 'SAVE_COMMAND'; payload: CommandConfig }
-  | { type: 'DELETE_COMMAND'; payload: { id: string } };
+  | { type: 'DELETE_COMMAND'; payload: { id: string } }
+  | { type: 'RUN_COMMAND'; payload: { id: string } };
 
 export type VscodeMessage =
   | { type: 'COMMANDS_LIST'; payload: CommandConfig[] }
@@ -16,10 +17,15 @@ export class SidebarMessageBus {
   private webviewView: vscode.WebviewView | null = null;
   private storageKey: string;
   private context: vscode.ExtensionContext;
+  private runHandler?: (config: CommandConfig) => Promise<void>;
 
   constructor(context: vscode.ExtensionContext, storageKey: string) {
     this.context = context;
     this.storageKey = storageKey;
+  }
+
+  setRunHandler(handler: (config: CommandConfig) => Promise<void>): void {
+    this.runHandler = handler;
   }
 
   setWebview(webview: vscode.WebviewView): void {
@@ -54,7 +60,7 @@ export class SidebarMessageBus {
     this.postMessage({ type: 'COMMANDS_LIST', payload: this.getCommands() });
   }
 
-  handleMessage(message: WebviewMessage): void {
+    handleMessage(message: WebviewMessage): void {
     switch (message.type) {
       case 'GET_COMMANDS':
         this.sendCommandsList();
@@ -69,7 +75,26 @@ export class SidebarMessageBus {
           this.postMessage({ type: 'ERROR', payload: { message: err.message } })
         );
         break;
+      case 'RUN_COMMAND':
+        this.runCommand(message.payload.id).catch((err) =>
+          this.postMessage({ type: 'ERROR', payload: { message: err.message } })
+        );
+        break;
     }
+  }
+
+  async runCommand(id: string): Promise<void> {
+    const commands = this.getCommands();
+    const target = commands.find((c) => c.id === id);
+    if (!target) {
+      this.postMessage({ type: 'ERROR', payload: { message: `Command ${id} not found` } });
+      return;
+    }
+    if (!this.runHandler) {
+      this.postMessage({ type: 'ERROR', payload: { message: 'No run handler registered' } });
+      return;
+    }
+    await this.runHandler(target);
   }
 
   dispose(): void {

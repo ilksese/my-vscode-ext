@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { SidebarMessageBus, type WebviewMessage } from './message-bus';
+import { executeCommand } from '../commands';
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'myCommandsSidebar';
@@ -12,6 +13,18 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     private readonly extensionUri: vscode.Uri
   ) {
     this.messageBus = new SidebarMessageBus(context, 'myCommands.config');
+    this.messageBus.setRunHandler(async (config) => {
+      const editor = vscode.window.activeTextEditor;
+      if (!editor) {
+        vscode.window.showWarningMessage('No active file. Open a file and try again.');
+        return;
+      }
+      try {
+        await executeCommand(context, config, editor.document.uri);
+      } catch {
+        // executeCommand already handles notifications
+      }
+    });
   }
 
   async resolveWebviewView(

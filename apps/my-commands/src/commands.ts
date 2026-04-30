@@ -67,19 +67,31 @@ export function registerCommandPalette(
   });
 }
 
-async function executeCommand(
+export async function executeCommand(
   context: vscode.ExtensionContext,
   config: CommandConfig,
   fileUri: vscode.Uri
 ): Promise<void> {
   const workspaceFolder = vscode.workspace.getWorkspaceFolder(fileUri);
+  const workspaceRootPath = workspaceFolder?.uri.fsPath || path.dirname(fileUri.fsPath);
   const channel = getOutputChannel();
   channel.show();
 
+  if (!workspaceFolder) {
+    const confirmed = await vscode.window.showWarningMessage(
+      `Current file "${path.basename(fileUri.fsPath)}" is outside any workspace. Command will run with the file directory as context. Continue?`,
+      { modal: true },
+      'Continue'
+    );
+    if (confirmed !== 'Continue') {
+      return;
+    }
+  }
+
   const variableContext: VariableContext = {
     fileAbsolutePath: fileUri.fsPath,
-    workspaceRootPath: workspaceFolder?.uri.fsPath,
-    cwd: computeCwd(config, workspaceFolder?.uri.fsPath, fileUri.fsPath),
+    workspaceRootPath,
+    cwd: computeCwd(config, workspaceRootPath, fileUri.fsPath),
   };
 
   const resolver = new VariableResolver();

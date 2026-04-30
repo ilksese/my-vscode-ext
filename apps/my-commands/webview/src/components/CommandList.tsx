@@ -5,9 +5,10 @@ interface CommandListProps {
   commands: CommandConfig[];
   onEdit: (command: CommandConfig) => void;
   onDelete: (command: CommandConfig) => void;
+  onRun: (command: CommandConfig) => void;
 }
 
-export function CommandList({ commands, onEdit, onDelete }: CommandListProps) {
+export function CommandList({ commands, onEdit, onDelete, onRun }: CommandListProps) {
   if (commands.length === 0) {
     return (
       <div className="empty-state">
@@ -20,7 +21,7 @@ export function CommandList({ commands, onEdit, onDelete }: CommandListProps) {
   return (
     <div className="command-list">
       {commands.map((cmd) => (
-        <CommandItem key={cmd.id} command={cmd} onEdit={onEdit} onDelete={onDelete} />
+        <CommandItem key={cmd.id} command={cmd} onEdit={onEdit} onDelete={onDelete} onRun={onRun} />
       ))}
     </div>
   );

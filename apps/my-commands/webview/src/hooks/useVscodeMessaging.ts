@@ -53,5 +53,9 @@ export function useVscodeMessaging() {
     setLoading(true);
   }, []);
 
-  return { commands, loading, error, saveCommand, deleteCommand, refresh };
+  const runCommand = useCallback((id: string) => {
+    postMessage({ type: 'RUN_COMMAND', payload: { id } });
+  }, []);
+
+  return { commands, loading, error, saveCommand, deleteCommand, refresh, runCommand };
 }

@@ -7,7 +7,7 @@ import { HelpPanel } from './components/HelpPanel';
 import type { CommandConfig } from './types';
 
 export default function App() {
-  const { commands, loading, error, saveCommand, deleteCommand } = useVscodeMessaging();
+  const { commands, loading, error, saveCommand, deleteCommand, runCommand } = useVscodeMessaging();
   const [editingCommand, setEditingCommand] = useState<CommandConfig | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<CommandConfig | null>(null);
@@ -83,11 +83,12 @@ export default function App() {
           onCancel={handleCancel}
         />
       ) : (
-        <CommandList
-          commands={commands}
-          onEdit={handleEdit}
-          onDelete={handleDeleteRequest}
-        />
+      <CommandList
+        commands={commands}
+        onEdit={handleEdit}
+        onDelete={handleDeleteRequest}
+        onRun={(cmd) => runCommand(cmd.id)}
+      />
       )}
 
       <ConfirmDialog

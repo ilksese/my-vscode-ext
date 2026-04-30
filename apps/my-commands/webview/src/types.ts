@@ -4,6 +4,7 @@ export interface CommandConfig {
   command: string;
   workingDir: 'workspaceRoot' | 'fileDir' | 'custom';
   customWorkingDir?: string;
+  autoAppendFile?: boolean;
 }
 
 export type VscodeMessage =
@@ -15,4 +16,5 @@ export type VscodeMessage =
 export type WebviewMessage =
   | { type: 'GET_COMMANDS' }
   | { type: 'SAVE_COMMAND'; payload: CommandConfig }
-  | { type: 'DELETE_COMMAND'; payload: { id: string } };
+  | { type: 'DELETE_COMMAND'; payload: { id: string } }
+  | { type: 'RUN_COMMAND'; payload: { id: string } };
