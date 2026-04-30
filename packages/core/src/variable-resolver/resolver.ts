@@ -8,20 +8,27 @@ export class VariableResolver {
     this.strategies.set(strategy.name, strategy);
   }
 
-  resolve(command: string, context: VariableContext, escapeFn?: (value: string) => string): string {
+  resolve(
+    command: string,
+    context: VariableContext,
+    escapeFn?: (value: string) => string,
+    autoAppend?: boolean
+  ): string {
     const hasVariables = /\$\{[^}]+\}/.test(command);
 
     if (!hasVariables) {
-      const relativeStrategy = this.strategies.get('relativeFile');
-      if (relativeStrategy && context.workspaceRootPath && context.fileAbsolutePath) {
-        try {
-          const relativePath = path.relative(context.workspaceRootPath, context.fileAbsolutePath);
-          if (relativePath) {
-            const escaped = escapeFn ? escapeFn(relativePath) : relativePath;
-            return `${command} ${escaped}`;
+      if (autoAppend !== false) {
+        const relativeStrategy = this.strategies.get('relativeFile');
+        if (relativeStrategy && context.workspaceRootPath && context.fileAbsolutePath) {
+          try {
+            const relativePath = path.relative(context.workspaceRootPath, context.fileAbsolutePath);
+            if (relativePath) {
+              const escaped = escapeFn ? escapeFn(relativePath) : relativePath;
+              return `${command} ${escaped}`;
+            }
+          } catch {
+            // Cannot resolve relativeFile, return command unchanged
           }
-        } catch {
-          // Cannot resolve relativeFile, return command unchanged
         }
       }
       return command;

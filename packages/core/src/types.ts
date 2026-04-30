@@ -4,6 +4,7 @@ export interface CommandConfig {
   command: string;
   workingDir: 'workspaceRoot' | 'fileDir' | 'custom';
   customWorkingDir?: string;
+  autoAppendFile?: boolean;
 }
 
 export interface VariableContext {

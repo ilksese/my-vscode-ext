@@ -117,6 +117,7 @@ async function executeCommand(
           variableResolver: resolver,
           variableContext,
           timeoutMs: 30000,
+          autoAppendFile: config.autoAppendFile,
           signal: abortController.signal,
           onOutput: (event) => {
             switch (event.type) {

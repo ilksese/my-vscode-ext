@@ -9,6 +9,7 @@ export interface CommandExecutorOptions {
   variableResolver: VariableResolver;
   variableContext: VariableContext;
   timeoutMs?: number;
+  autoAppendFile?: boolean;
   onOutput?: (event: { type: 'stdout' | 'stderr' | 'info' | 'status'; message: string }) => void;
   signal?: AbortSignal;
 }

@@ -15,11 +15,12 @@ export class CommandExecutor {
       variableResolver,
       variableContext,
       timeoutMs = 30000,
+      autoAppendFile = true,
       onOutput,
       signal,
     } = options;
 
-    const resolvedCommand = variableResolver.resolve(command, variableContext, (v) => shellAdapter.escapePath(v));
+    const resolvedCommand = variableResolver.resolve(command, variableContext, (v) => shellAdapter.escapePath(v), autoAppendFile);
     const ts = timestamp();
 
     onOutput?.({ type: 'info', message: `${ts} [Info] Executing: ${resolvedCommand}` });

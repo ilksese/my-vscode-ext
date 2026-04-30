@@ -29,6 +29,7 @@ export function CommandForm({ command, onSave, onCancel }: CommandFormProps) {
     command?.workingDir || 'workspaceRoot'
   );
   const [customWorkingDir, setCustomWorkingDir] = useState(command?.customWorkingDir || '');
+  const [autoAppendFile, setAutoAppendFile] = useState(command?.autoAppendFile ?? true);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showVarPicker, setShowVarPicker] = useState(false);
   const [cursorPos, setCursorPos] = useState<number | null>(null);
@@ -94,6 +95,7 @@ export function CommandForm({ command, onSave, onCancel }: CommandFormProps) {
       command: cmd.trim(),
       workingDir,
       customWorkingDir: workingDir === 'custom' ? customWorkingDir.trim() : undefined,
+      autoAppendFile,
     };
 
     onSave(config);
@@ -152,6 +154,17 @@ export function CommandForm({ command, onSave, onCancel }: CommandFormProps) {
           </div>
         )}
         {errors.command && <span className="error-text">{errors.command}</span>}
+      </div>
+
+      <div className="form-group form-checkbox">
+        <label>
+          <input
+            type="checkbox"
+            checked={autoAppendFile}
+            onChange={(e) => setAutoAppendFile((e.target as HTMLInputElement).checked)}
+          />
+          Auto append file path when no variables present
+        </label>
       </div>
 
       <div className="form-group">
