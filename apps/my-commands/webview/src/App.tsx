@@ -3,6 +3,7 @@ import { useVscodeMessaging } from './hooks/useVscodeMessaging';
 import { CommandList } from './components/CommandList';
 import { CommandForm } from './components/CommandForm';
 import { ConfirmDialog } from './components/ConfirmDialog';
+import { HelpPanel } from './components/HelpPanel';
 import type { CommandConfig } from './types';
 
 export default function App() {
@@ -10,6 +11,7 @@ export default function App() {
   const [editingCommand, setEditingCommand] = useState<CommandConfig | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<CommandConfig | null>(null);
+  const [showHelp, setShowHelp] = useState(false);
 
   const handleSave = (config: CommandConfig) => {
     saveCommand(config);
@@ -54,15 +56,24 @@ export default function App() {
     <div className="container">
       <div className="header">
         <h2>My Commands</h2>
-        <button
-          className="add-btn"
-          onClick={() => {
-            setEditingCommand(null);
-            setShowForm(true);
-          }}
-        >
-          + Add Command
-        </button>
+        <div className="header-actions">
+          <button
+            className="help-btn"
+            onClick={() => setShowHelp(true)}
+            aria-label="Show help"
+          >
+            ?
+          </button>
+          <button
+            className="add-btn"
+            onClick={() => {
+              setEditingCommand(null);
+              setShowForm(true);
+            }}
+          >
+            + Add Command
+          </button>
+        </div>
       </div>
 
       {showForm ? (
@@ -88,6 +99,8 @@ export default function App() {
         onConfirm={handleDeleteConfirm}
         onCancel={handleDeleteCancel}
       />
+
+      {showHelp && <HelpPanel onClose={() => setShowHelp(false)} />}
     </div>
   );
 }
