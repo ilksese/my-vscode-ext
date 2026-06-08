@@ -15,4 +15,7 @@ export default defineConfig({
   dts: false,
   minify: false,
   sourcemap: false,
+  outputOptions: {
+    entryFileNames: 'extension.js',
+  },
 });
