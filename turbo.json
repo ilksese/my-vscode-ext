@@ -1,6 +1,8 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["**/.env.*local"],
+  "cacheMaxSize": "500MB",
+  "cacheMaxAge": "3d",
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
