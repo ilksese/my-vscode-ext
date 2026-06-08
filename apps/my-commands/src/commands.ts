@@ -34,12 +34,6 @@ export function registerCommandPalette(
       return;
     }
 
-    const editor = vscode.window.activeTextEditor;
-    if (!editor) {
-      vscode.window.showWarningMessage('No active file. Open a file and try again.');
-      return;
-    }
-
     const quickPick = vscode.window.createQuickPick();
     quickPick.items = commands.map((cmd) => ({
       label: cmd.displayName,
@@ -48,14 +42,20 @@ export function registerCommandPalette(
     quickPick.placeholder = 'Select a command to run';
 
     quickPick.onDidAccept(async () => {
-      const currentEditor = vscode.window.activeTextEditor;
+      const editor = vscode.window.activeTextEditor;
       const selected = commands.find(
         (cmd) => cmd.displayName === quickPick.selectedItems[0]?.label
       );
       quickPick.hide();
 
-      if (selected && currentEditor) {
-        await executeCommand(context, selected, currentEditor.document.uri);
+      if (!selected) return;
+
+      if (editor) {
+        await executeCommand(context, selected, editor.document.uri);
+      } else if (!commandNeedsFile(selected)) {
+        await executeCommand(context, selected, undefined);
+      } else {
+        vscode.window.showWarningMessage('No active file. Open a file and try again.');
       }
     });
 
@@ -67,31 +67,41 @@ export function registerCommandPalette(
   });
 }
 
+export function commandNeedsFile(config: CommandConfig): boolean {
+  const fileVariables = /\$\{(?:file|relativeFile|fileBasename|fileBasenameNoExtension|fileDirname)\}/;
+  if (fileVariables.test(config.command)) return true;
+  return config.autoAppendFile !== false;
+}
+
 export async function executeCommand(
   context: vscode.ExtensionContext,
   config: CommandConfig,
-  fileUri: vscode.Uri
+  fileUri: vscode.Uri | undefined
 ): Promise<void> {
-  const workspaceFolder = vscode.workspace.getWorkspaceFolder(fileUri);
-  const workspaceRootPath = workspaceFolder?.uri.fsPath || path.dirname(fileUri.fsPath);
   const channel = getOutputChannel();
   channel.show();
 
-  if (!workspaceFolder) {
-    const confirmed = await vscode.window.showWarningMessage(
-      `Current file "${path.basename(fileUri.fsPath)}" is outside any workspace. Command will run with the file directory as context. Continue?`,
-      { modal: true },
-      'Continue'
-    );
-    if (confirmed !== 'Continue') {
-      return;
+  let workspaceRootPath: string;
+  if (fileUri) {
+    const workspaceFolder = vscode.workspace.getWorkspaceFolder(fileUri);
+    workspaceRootPath = workspaceFolder?.uri.fsPath || path.dirname(fileUri.fsPath);
+
+    if (!workspaceFolder) {
+      const confirmed = await vscode.window.showWarningMessage(
+        `Current file "${path.basename(fileUri.fsPath)}" is outside any workspace. Command will run with the file directory as context. Continue?`,
+        { modal: true },
+        'Continue'
+      );
+      if (confirmed !== 'Continue') return;
     }
+  } else {
+    workspaceRootPath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || process.cwd();
   }
 
   const variableContext: VariableContext = {
-    fileAbsolutePath: fileUri.fsPath,
+    fileAbsolutePath: fileUri?.fsPath,
     workspaceRootPath,
-    cwd: computeCwd(config, workspaceRootPath, fileUri.fsPath),
+    cwd: computeCwd(config, workspaceRootPath, fileUri?.fsPath),
   };
 
   const resolver = new VariableResolver();
