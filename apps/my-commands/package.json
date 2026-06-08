@@ -2,7 +2,7 @@
   "name": "my-commands",
   "displayName": "My Commands",
   "description": "Custom command execution tool for VSCode",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "private": true,
   "publisher": "ilksese",
   "repository": {
@@ -20,6 +20,7 @@
     "onCommand:myCommands.runFromMenu"
   ],
   "main": "./dist/extension.js",
+  "icon": "media/icon.png",
   "contributes": {
     "commands": [
       {
