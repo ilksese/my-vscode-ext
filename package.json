@@ -11,7 +11,10 @@
     "clean": "turbo clean",
     "build:my-commands": "turbo run build --filter=my-commands",
     "package:my-commands": "turbo run package --filter=my-commands",
-    "publish:my-commands": "turbo run publish --filter=my-commands"
+    "publish:my-commands": "turbo run publish --filter=my-commands",
+    "dev:docs": "turbo run dev --filter=@suite/docs",
+    "build:docs": "turbo run build --filter=@suite/docs",
+    "preview:docs": "turbo run preview --filter=@suite/docs"
   },
   "packageManager": "pnpm@10.22.0",
   "engines": {
