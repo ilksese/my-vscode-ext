@@ -1,0 +1,157 @@
+{
+  "name": "my-llm",
+  "displayName": "My LLM",
+  "description": "Custom OpenAI-compatible language model provider for VS Code Chat",
+  "version": "0.0.1",
+  "private": true,
+  "publisher": "ilksese",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ilksese/my-vscode-ext"
+  },
+  "engines": {
+    "vscode": "^1.134.0"
+  },
+  "categories": [
+    "AI"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onLanguageModelChat:my-llm"
+  ],
+  "contributes": {
+    "configuration": {
+      "title": "My LLM",
+      "properties": {
+        "my-llm.providers": {
+          "type": "array",
+          "default": [],
+          "markdownDescription": "OpenAI 兼容的模型供应商列表。每个条目需配置 `baseUrl`、`apiKey` 与 `models`。",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "baseUrl",
+              "apiKey",
+              "models"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "供应商唯一标识，用于区分不同供应商"
+              },
+              "name": {
+                "type": "string",
+                "description": "供应商显示名称，缺省使用 id"
+              },
+              "baseUrl": {
+                "type": "string",
+                "description": "OpenAI 兼容 API 的基础地址，例如 https://api.openai.com/v1"
+              },
+              "apiKey": {
+                "type": "string",
+                "description": "API 密钥"
+              },
+              "apiProtocol": {
+                "type": "string",
+                "enum": [
+                  "openai",
+                  "openai-compatible",
+                  "google",
+                  "anthropic"
+                ],
+                "description": "API 协议，缺省为 openai。model 层可覆盖此值"
+              },
+              "models": {
+                "type": "array",
+                "description": "可用模型列表",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "模型标识，如 gpt-4o-mini"
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "显示名称，缺省使用 id"
+                    },
+                    "family": {
+                      "type": "string",
+                      "description": "模型家族名，缺省使用 id"
+                    },
+                    "version": {
+                      "type": "string",
+                      "description": "模型版本，缺省为 '1.0.0'"
+                    },
+                    "apiProtocol": {
+                      "type": "string",
+                      "enum": [
+                        "openai",
+                        "openai-compatible",
+                        "google",
+                        "anthropic"
+                      ],
+                      "description": "API 协议，覆盖 provider 层设置，缺省继承 provider"
+                    }
+                  }
+                }
+              },
+              "maxInputTokens": {
+                "type": "integer",
+                "default": 128000,
+                "description": "最大输入 token 数"
+              },
+              "maxOutputTokens": {
+                "type": "integer",
+                "default": 4096,
+                "description": "最大输出 token 数"
+              },
+              "toolCalling": {
+                "type": "boolean",
+                "default": false,
+                "description": "是否声明支持工具调用"
+              },
+              "imageInput": {
+                "type": "boolean",
+                "default": false,
+                "description": "是否声明支持图片输入"
+              }
+            }
+          }
+        }
+      }
+    },
+    "languageModelChatProviders": [
+      {
+        "vendor": "my-llm",
+        "displayName": "My LLM"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "tsdown -c tsdown.config.ts",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "package": "vsce package --no-dependencies",
+    "publish": "vsce publish --packagePath $(ls -t *.vsix | head -1)"
+  },
+  "devDependencies": {
+    "@suite/tsconfig": "workspace:*",
+    "@types/node": "20.0.0",
+    "@types/vscode": "1.134.0",
+    "@vscode/vsce": "3.9.2",
+    "tsdown": "0.21.10",
+    "typescript": "6.0.3"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "2.0.100",
+    "@ai-sdk/google": "2.0.95",
+    "@ai-sdk/openai": "2.0.123",
+    "@ai-sdk/openai-compatible": "1.0.53",
+    "ai": "5.0.250"
+  }
+}

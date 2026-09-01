@@ -1,0 +1,12 @@
+{
+  "extends": "@suite/tsconfig/base.json",
+  "compilerOptions": {
+    "target": "esnext",
+    "outDir": "dist",
+    "lib": ["ES2022", "DOM"],
+    "types": ["node", "vscode"],
+    "declarationMap": false,
+    "sourceMap": false
+  },
+  "include": ["src/**/*.ts"]
+}

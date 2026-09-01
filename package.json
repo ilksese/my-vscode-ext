@@ -11,7 +11,10 @@
     "clean": "turbo clean",
     "build:my-commands": "turbo run build --filter=my-commands",
     "package:my-commands": "turbo run package --filter=my-commands",
-    "publish:my-commands": "turbo run publish --filter=my-commands"
+    "publish:my-commands": "turbo run publish --filter=my-commands",
+    "build:my-llm": "turbo run build --filter=my-llm",
+    "package:my-llm": "turbo run package --filter=my-llm",
+    "publish:my-llm": "turbo run publish --filter=my-llm"
   },
   "packageManager": "pnpm@10.34.5",
   "engines": {

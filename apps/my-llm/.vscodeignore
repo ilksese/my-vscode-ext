@@ -1,0 +1,13 @@
+src/
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+.turbo/
+AGENT.md
+**/*.d.ts
+**/*.js.map
+.vscode/
+**/*.tsbuildinfo
+tsconfig.json
+tsdown.config.ts
