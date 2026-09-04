@@ -32,8 +32,7 @@
             "required": [
               "id",
               "baseUrl",
-              "apiKey",
-              "models"
+              "apiKey"
             ],
             "properties": {
               "id": {
@@ -62,7 +61,7 @@
               },
               "models": {
                 "type": "array",
-                "description": "可用模型列表",
+                "description": "可用模型列表。缺省或为空时，自动通过 GET {baseUrl}/models 发现模型（每个会话拉取一次，缓存于 globalState）",
                 "items": {
                   "type": "object",
                   "required": [

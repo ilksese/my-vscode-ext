@@ -48,13 +48,19 @@ interface MetadataCache {
 const METADATA_KEY = 'my-llm.metadata';
 const METADATA_URL = 'https://models.dev/api.json';
 
+interface AutoModelsCache {
+  [providerId: string]: { fetchedAt: number; ids: string[] };
+}
+
+const AUTOMODELS_KEY = 'my-llm.automodels';
+
 interface ProviderConfig {
   id: string;
   name?: string;
   baseUrl: string;
   apiKey: string;
   apiProtocol?: ApiProtocol;
-  models: ModelConfig[];
+  models?: ModelConfig[];
 }
 
 interface ResolvedModel {
@@ -88,6 +94,9 @@ class LLMProvider implements ProviderType {
   private readonly pendingToolNames = new Set<string>();
 
   private metadata?: MetadataCache;
+  private autoModels?: AutoModelsCache;
+  private readonly fetchingModels = new Set<string>();
+  private readonly fetchFailed = new Set<string>();
 
   constructor(private readonly context: vscode.ExtensionContext) {
     vscode.workspace.onDidChangeConfiguration((e) => {
@@ -103,6 +112,37 @@ class LLMProvider implements ProviderType {
 
   loadCachedMetadata(): void {
     this.metadata = this.context.globalState.get<MetadataCache>(METADATA_KEY);
+    this.autoModels = this.context.globalState.get<AutoModelsCache>(AUTOMODELS_KEY);
+  }
+
+  /* models 未配置（缺省或空数组）的 provider：从 GET {baseUrl}/models 自动发现模型。
+     每个会话首次 provide 时拉取一次并写入 globalState；先返回缓存列表，拉完触发 onChange 刷新。 */
+  private refreshAutoModels(): void {
+    for (const p of this.getConfigs()) {
+      if (p.models?.length || this.fetchingModels.has(p.id) || this.fetchFailed.has(p.id)) continue;
+      this.fetchAutoModels(p);
+    }
+  }
+
+  private async fetchAutoModels(p: ProviderConfig): Promise<void> {
+    this.fetchingModels.add(p.id);
+    try {
+      const url = `${p.baseUrl.replace(/\/+$/, '')}/models`;
+      const r = await fetch(url, { headers: { Authorization: `Bearer ${p.apiKey}` } });
+      if (!r.ok) throw new Error(`${url} responded ${r.status}`);
+      const raw = (await r.json()) as { data?: { id?: unknown }[] };
+      const ids = [...new Set((raw.data ?? []).map((m) => String(m.id)).filter((id) => id && !/\s/.test(id)))];
+      this.autoModels = { ...this.autoModels, [p.id]: { fetchedAt: Date.now(), ids } };
+      await this.context.globalState.update(AUTOMODELS_KEY, this.autoModels);
+      this.onChange.fire();
+    } catch (e) {
+      this.fetchFailed.add(p.id);
+      const msg = e instanceof Error ? e.message : String(e);
+      const cause = e instanceof Error ? unwrapCause(e) : '';
+      vscode.window.showWarningMessage(`My LLM: failed to fetch models for provider "${p.id}": ${msg}${cause}`);
+    } finally {
+      this.fetchingModels.delete(p.id);
+    }
   }
 
   async patchModel(): Promise<void> {
@@ -141,7 +181,10 @@ class LLMProvider implements ProviderType {
   private resolveModels(): ResolvedModel[] {
     const out: ResolvedModel[] = [];
     for (const p of this.getConfigs()) {
-      for (const m of p.models) {
+      const list: ModelConfig[] = p.models?.length
+        ? p.models
+        : (this.autoModels?.[p.id]?.ids ?? []).map((id) => ({ id }));
+      for (const m of list) {
         const meta = this.matchMetadata(m.id);
         const pricing = m.pricing ?? metaPricing(meta);
         out.push({
@@ -173,7 +216,8 @@ class LLMProvider implements ProviderType {
     return this.resolveModels().find((m) => m.id === modelId);
   }
 
-  provideLanguageModelChatInformation(): vscode.LanguageModelChatInformation[] {
+  async provideLanguageModelChatInformation(): Promise<vscode.LanguageModelChatInformation[]> {
+    this.refreshAutoModels();
     return this.resolveModels().map((m) => ({
       id: m.id,
       name: m.name,

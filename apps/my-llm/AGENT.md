@@ -9,7 +9,8 @@ to any OpenAI-compatible `/chat/completions` endpoint. No GUI — configured via
 
 - Extension host runs in Node.js 18+ — uses global `fetch`/`ReadableStream`, no Node fetch dependency.
 - Depends on VS Code API `lm.registerLanguageModelChatProvider` (VS Code >= 1.134).
-- Config schema: `my-llm.providers[]` with `baseUrl`, `apiKey`, `models[]`.
+- Config schema: `my-llm.providers[]` with `baseUrl`, `apiKey`, optional `models[]`.
+- `models` 缺省或为空时，从 `GET {baseUrl}/models` 自动发现模型：每会话首次 provide 触发拉取（去重、失败不重试），结果缓存于 globalState key `my-llm.automodels`，先返回缓存再异步刷新（onChange）。自动发现的模型同样走 models.dev 元数据补全。
 - Single provider registered under vendor `my-llm`; each model maps back to its provider config by `model.id`.
 
 ## Build Commands
