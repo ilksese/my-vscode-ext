@@ -111,7 +111,7 @@
                     },
                     "pricing": {
                       "type": "object",
-                      "description": "每百万 token 价格（美元），显示在模型提示中",
+                      "description": "每百万 token 价格（美元），显示在模型提示与 Language Models 面板价格列",
                       "properties": {
                         "input": {
                           "type": "number",
@@ -135,6 +135,12 @@
       {
         "vendor": "my-llm",
         "displayName": "My LLM"
+      }
+    ],
+    "commands": [
+      {
+        "command": "my-llm.patchModel",
+        "title": "my-llm: patch model"
       }
     ]
   },
