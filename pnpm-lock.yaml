@@ -82,12 +82,6 @@ importers:
 
   apps/my-llm:
     dependencies:
-      '@ai-sdk/anthropic':
-        specifier: 2.0.100
-        version: 2.0.100(zod@4.5.4)
-      '@ai-sdk/google':
-        specifier: 2.0.95
-        version: 2.0.95(zod@4.5.4)
       '@ai-sdk/openai':
         specifier: 2.0.123
         version: 2.0.123(zod@4.5.4)
@@ -136,20 +130,8 @@ importers:
 
 packages:
 
-  '@ai-sdk/anthropic@2.0.100':
-    resolution: {integrity: sha512-JdrohlAmAigMcGw3IPTk3BLA7izHV7QUVjZG73+Rdb9VuA/ianqvV61uET5hxbxZpNSP75DqPPoNzg/K/gjOyQ==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
-
   '@ai-sdk/gateway@2.0.144':
     resolution: {integrity: sha512-8aZQQHIzBlxfmVBhtAWQDEy44x6GYqGl23Wc/sB0FjqoZJnrJiZszA5ZK0WvFKH00DCI4NzEfK9q2q4w3xSGFQ==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
-
-  '@ai-sdk/google@2.0.95':
-    resolution: {integrity: sha512-nE45RIjdpJRMK4vFbGL1xvOBsE7jsC3niDW+UrHLBf4T3YTm7gjuX+COycsmLR6opKpZcqHwF7SY/pN9mqHfwQ==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -2557,23 +2539,11 @@ packages:
 
 snapshots:
 
-  '@ai-sdk/anthropic@2.0.100(zod@4.5.4)':
-    dependencies:
-      '@ai-sdk/provider': 2.0.3
-      '@ai-sdk/provider-utils': 3.0.36(zod@4.5.4)
-      zod: 4.5.4
-
   '@ai-sdk/gateway@2.0.144(zod@4.5.4)':
     dependencies:
       '@ai-sdk/provider': 2.0.3
       '@ai-sdk/provider-utils': 3.0.36(zod@4.5.4)
       '@vercel/oidc': 3.1.0
-      zod: 4.5.4
-
-  '@ai-sdk/google@2.0.95(zod@4.5.4)':
-    dependencies:
-      '@ai-sdk/provider': 2.0.3
-      '@ai-sdk/provider-utils': 3.0.36(zod@4.5.4)
       zod: 4.5.4
 
   '@ai-sdk/openai-compatible@1.0.53(zod@4.5.4)':

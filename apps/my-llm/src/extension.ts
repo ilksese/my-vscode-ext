@@ -3,10 +3,8 @@ import { streamText, tool, jsonSchema } from 'ai';
 import type { LanguageModel, ModelMessage, ToolSet } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
-import { createAnthropic } from '@ai-sdk/anthropic';
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
 
-type ApiProtocol = 'openai' | 'openai-compatible' | 'google' | 'anthropic';
+type ApiProtocol = 'openai' | 'openai-compatible';
 
 interface ModelConfig {
   id: string;
@@ -208,18 +206,11 @@ function sdkModel(m: ResolvedModel): LanguageModel {
       return createOpenAI({ baseURL: base, apiKey: m.apiKey }).responses(m.id);
     case 'openai-compatible':
       return createOpenAICompatible({ name: 'my-llm', baseURL: base, apiKey: m.apiKey }).chatModel(m.id);
-    case 'anthropic':
-      return createAnthropic({ baseURL: base, apiKey: m.apiKey })(m.id);
-    case 'google':
-      return createGoogleGenerativeAI({ baseURL: base, apiKey: m.apiKey })(m.id);
   }
 }
 
 function sdkBaseURL(m: ResolvedModel): string {
-  const base = m.baseUrl.replace(/\/+$/, '');
-  if (m.protocol === 'anthropic') return base.endsWith('/v1') ? base : `${base}/v1`;
-  if (m.protocol === 'google') return base.endsWith('/v1beta') ? base : `${base}/v1beta`;
-  return base;
+  return m.baseUrl.replace(/\/+$/, '');
 }
 
 function toToolOutput(content: unknown[]): unknown {
