@@ -263,7 +263,8 @@ class LLMProvider implements ProviderType {
     messages: readonly vscode.LanguageModelChatRequestMessage[],
     options: vscode.ProvideLanguageModelChatResponseOptions,
     progress: vscode.Progress<vscode.LanguageModelResponsePart>,
-    signal: AbortSignal
+    signal: AbortSignal,
+    protocol?: ApiProtocol
   ): Promise<void> {
     const tools: ToolSet = {};
     for (const t of options.tools ?? []) {
@@ -272,25 +273,42 @@ class LLMProvider implements ProviderType {
         inputSchema: jsonSchema((t.inputSchema ?? { type: 'object', properties: {} }) as Parameters<typeof jsonSchema>[0]),
       });
     }
+    const effective = protocol ?? m.protocol;
 
     const result = streamText({
-      model: sdkModel(m),
+      model: sdkModel(m, effective),
       messages: this.toSDKMessages(messages),
       tools: Object.keys(tools).length ? tools : undefined,
       toolChoice: options.toolMode === vscode.LanguageModelChatToolMode.Required ? 'required' : undefined,
-      providerOptions: this.providerOptions(m, options),
+      providerOptions: this.providerOptions(m, options, effective),
       abortSignal: signal,
     });
 
-    for await (const part of result.fullStream) {
-      if (part.type === 'text-delta') {
-        progress.report(new vscode.LanguageModelTextPart(part.text));
-      } else if (part.type === 'tool-call') {
-        const call = part as unknown as { toolCallId: string; toolName: string; input?: unknown };
-        this.toolNames.set(call.toolCallId, call.toolName);
-        this.pendingToolNames.add(call.toolCallId);
-        progress.report(new vscode.LanguageModelToolCallPart(call.toolCallId, call.toolName, call.input ?? {}));
+    try {
+      for await (const part of result.fullStream) {
+        if (part.type === 'text-delta') {
+          progress.report(new vscode.LanguageModelTextPart(part.text));
+        } else if (part.type === 'tool-call') {
+          const call = part as unknown as { toolCallId: string; toolName: string; input?: unknown };
+          this.toolNames.set(call.toolCallId, call.toolName);
+          this.pendingToolNames.add(call.toolCallId);
+          progress.report(new vscode.LanguageModelToolCallPart(call.toolCallId, call.toolName, call.input ?? {}));
+        } else if (part.type === 'error') {
+          // AI SDK v5 不抛异常：doStream 失败（404 等）和 InvalidPromptError 都作为 error part 进流
+          throw (part as { error?: unknown }).error ?? new Error('unknown stream error');
+        }
       }
+    } catch (e) {
+      // 诊断辅助：把实际发送的消息与完整 cause 链打进 exthost console（renderer.log 可见）
+      const msg = e instanceof Error ? e.message : String(e);
+      const cause = e instanceof Error ? unwrapCause(e) : '';
+      console.error(`[my-llm] stream failed for ${m.id}: ${msg}${cause}`, JSON.stringify(this.toSDKMessages(messages)).slice(0, 4000));
+      // ponytail: 网关常只给部分模型开 /responses，404/405 时降级 chat completions 重试一次
+      const status = (e as { statusCode?: number }).statusCode;
+      if (!protocol && m.protocol === 'openai' && (status === 404 || status === 405)) {
+        return this.streamResponse(m, messages, options, progress, signal, 'openai-compatible');
+      }
+      throw e;
     }
   }
 
@@ -306,7 +324,8 @@ class LLMProvider implements ProviderType {
 
   private providerOptions(
     m: ResolvedModel,
-    options: vscode.ProvideLanguageModelChatResponseOptions
+    options: vscode.ProvideLanguageModelChatResponseOptions,
+    protocol?: ApiProtocol
   ): Record<string, Record<string, string>> {
     // modelConfiguration 是未文档化字段：VS Code 把模型配置 UI / agent frontmatter 里的
     // reasoning-effort 以 options.modelConfiguration 形式传入（见 extensionHostProcess.js）
@@ -314,59 +333,53 @@ class LLMProvider implements ProviderType {
       ?.reasoningEffort;
     const effort = configured ?? m.defaultReasoningEffort;
     if (!effort) return {};
-    return m.protocol === 'openai' ? { openai: { reasoningEffort: effort } } : { 'my-llm': { reasoningEffort: effort } };
+    const p = protocol ?? m.protocol;
+    return p === 'openai' ? { openai: { reasoningEffort: effort } } : { 'my-llm': { reasoningEffort: effort } };
   }
 
+  /* VS Code 的工具结果可能出现在 User 角色消息里（见 vscode.d.ts 对 toolMode 的说明），
+     两种角色都要处理；且 assistant(tool-call) 消息必须先于 tool 输出消息。 */
   private toSDKMessages(messages: readonly vscode.LanguageModelChatRequestMessage[]): ModelMessage[] {
     const out: ModelMessage[] = [];
     for (const msg of messages) {
-      if (msg.role === vscode.LanguageModelChatMessageRole.User) {
-        out.push({ role: 'user', content: this.toUserContent(msg.content) } as ModelMessage);
-      } else {
-        const content: unknown[] = [];
-        for (const part of msg.content) {
-          if (part instanceof vscode.LanguageModelTextPart) {
-            content.push({ type: 'text', text: part.value });
-          } else if (part instanceof vscode.LanguageModelToolCallPart) {
-            content.push({ type: 'tool-call', toolCallId: part.callId, toolName: part.name, input: part.input });
-          } else if (part instanceof vscode.LanguageModelToolResultPart) {
-            out.push({
-              role: 'tool',
-              content: [
-                {
-                  type: 'tool-result',
-                  toolCallId: part.callId,
-                  toolName: this.toolNames.get(part.callId) ?? 'tool',
-                  output: toToolOutput(part.content),
-                },
-              ],
-            } as ModelMessage);
-          }
+      const isUser = msg.role === vscode.LanguageModelChatMessageRole.User;
+      const assistantContent: unknown[] = [];
+      const userContent: unknown[] = [];
+      const toolMsgs: ModelMessage[] = [];
+      for (const part of msg.content) {
+        if (part instanceof vscode.LanguageModelTextPart) {
+          (isUser ? userContent : assistantContent).push({ type: 'text', text: part.value });
+        } else if (part instanceof vscode.LanguageModelDataPart) {
+          if (isUser) userContent.push({ type: 'image', image: part.data, mediaType: part.mimeType });
+        } else if (part instanceof vscode.LanguageModelToolCallPart) {
+          assistantContent.push({ type: 'tool-call', toolCallId: part.callId, toolName: part.name, input: part.input });
+        } else if (part instanceof vscode.LanguageModelToolResultPart) {
+          toolMsgs.push({
+            role: 'tool',
+            content: [
+              {
+                type: 'tool-result',
+                toolCallId: part.callId,
+                toolName: this.toolNames.get(part.callId) ?? 'tool',
+                output: toToolOutput(part.content),
+              },
+            ],
+          } as ModelMessage);
         }
-        if (content.length) out.push({ role: 'assistant', content: content as never } as ModelMessage);
       }
+      if (assistantContent.length) out.push({ role: 'assistant', content: assistantContent as never } as ModelMessage);
+      out.push(...toolMsgs);
+      if (isUser && userContent.length) out.push({ role: 'user', content: userContent } as ModelMessage);
     }
     return out;
-  }
-
-  private toUserContent(content: readonly unknown[]): unknown[] {
-    const parts: unknown[] = [];
-    for (const part of content) {
-      if (part instanceof vscode.LanguageModelTextPart) {
-        parts.push({ type: 'text', text: part.value });
-      } else if (part instanceof vscode.LanguageModelDataPart) {
-        parts.push({ type: 'image', image: part.data, mediaType: part.mimeType });
-      }
-    }
-    return parts;
   }
 }
 
 /* ---------- protocol -> AI SDK model ---------- */
 
-function sdkModel(m: ResolvedModel): LanguageModel {
+function sdkModel(m: ResolvedModel, protocol?: ApiProtocol): LanguageModel {
   const base = sdkBaseURL(m);
-  switch (m.protocol) {
+  switch (protocol ?? m.protocol) {
     case 'openai':
       return createOpenAI({ baseURL: base, apiKey: m.apiKey }).responses(m.id);
     case 'openai-compatible':
@@ -441,9 +454,25 @@ function flattenModelsDev(raw: Record<string, { models?: Record<string, RawModel
   return { fetchedAt: Date.now(), models };
 }
 
+/* AI SDK 的 jsonValueSchema 拒绝 Uint8Array/undefined 等（会触发 InvalidPromptError），
+   所以工具输出必须先转成纯 JSON 值 */
 function toToolOutput(content: unknown[]): unknown {
-  if (content.length === 1 && typeof content[0] === 'string') return { type: 'text', value: content[0] };
-  return { type: 'json', value: content };
+  const parts = content.map((c) => {
+    if (typeof c === 'string') return c;
+    if (c instanceof vscode.LanguageModelTextPart) return c.value;
+    if (c instanceof vscode.LanguageModelDataPart) {
+      return { type: 'media', mimeType: c.mimeType, dataBase64: Buffer.from(c.data).toString('base64') };
+    }
+    return jsonSafe(c);
+  });
+  if (parts.length === 1 && typeof parts[0] === 'string') return { type: 'text', value: parts[0] };
+  return { type: 'json', value: parts };
+}
+
+function jsonSafe(v: unknown): unknown {
+  return JSON.parse(
+    JSON.stringify(v ?? null, (_k, val) => (val instanceof Uint8Array ? { base64: Buffer.from(val).toString('base64') } : val))
+  );
 }
 
 export function activate(context: vscode.ExtensionContext): void {
