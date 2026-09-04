@@ -6,6 +6,9 @@ import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 
 type ApiProtocol = 'openai' | 'openai-compatible';
 
+const REASONING_EFFORTS = ['none', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max'] as const;
+type ReasoningEffort = (typeof REASONING_EFFORTS)[number];
+
 interface ModelConfig {
   id: string;
   name?: string;
@@ -17,6 +20,8 @@ interface ModelConfig {
   toolCalling?: boolean;
   imageInput?: boolean;
   pricing?: ModelPricing;
+  defaultReasoningEffort?: ReasoningEffort;
+  reasoningEfforts?: ReasoningEffort[];
 }
 
 interface ModelPricing {
@@ -69,6 +74,8 @@ interface ResolvedModel {
   inputCost?: number;
   outputCost?: number;
   cacheCost?: number;
+  defaultReasoningEffort?: ReasoningEffort;
+  reasoningEfforts?: ReasoningEffort[];
 }
 
 type ProviderType = vscode.LanguageModelChatProvider<vscode.LanguageModelChatInformation>;
@@ -154,6 +161,8 @@ class LLMProvider implements ProviderType {
           inputCost: pricing?.input,
           outputCost: pricing?.output,
           cacheCost: pricing?.cacheRead,
+          defaultReasoningEffort: m.defaultReasoningEffort,
+          reasoningEfforts: m.reasoningEfforts,
         });
       }
     }
@@ -178,6 +187,7 @@ class LLMProvider implements ProviderType {
       inputCost: m.inputCost,
       outputCost: m.outputCost,
       cacheCost: m.cacheCost,
+      configurationSchema: reasoningEffortSchema(m),
     }));
   }
 
@@ -224,6 +234,7 @@ class LLMProvider implements ProviderType {
       messages: this.toSDKMessages(messages),
       tools: Object.keys(tools).length ? tools : undefined,
       toolChoice: options.toolMode === vscode.LanguageModelChatToolMode.Required ? 'required' : undefined,
+      providerOptions: this.providerOptions(m, options),
       abortSignal: signal,
     });
 
@@ -248,6 +259,19 @@ class LLMProvider implements ProviderType {
   }
 
   /* ---------- vscode parts -> AI SDK messages ---------- */
+
+  private providerOptions(
+    m: ResolvedModel,
+    options: vscode.ProvideLanguageModelChatResponseOptions
+  ): Record<string, Record<string, string>> {
+    // modelConfiguration 是未文档化字段：VS Code 把模型配置 UI / agent frontmatter 里的
+    // reasoning-effort 以 options.modelConfiguration 形式传入（见 extensionHostProcess.js）
+    const configured = (options as { modelConfiguration?: { reasoningEffort?: string } }).modelConfiguration
+      ?.reasoningEffort;
+    const effort = configured ?? m.defaultReasoningEffort;
+    if (!effort) return {};
+    return m.protocol === 'openai' ? { openai: { reasoningEffort: effort } } : { 'my-llm': { reasoningEffort: effort } };
+  }
 
   private toSDKMessages(messages: readonly vscode.LanguageModelChatRequestMessage[]): ModelMessage[] {
     const out: ModelMessage[] = [];
@@ -324,6 +348,23 @@ function pricingTooltip(p?: ModelPricing): string | undefined {
   if (!p || (p.input === undefined && p.output === undefined)) return undefined;
   const fmt = (v?: number) => (v === undefined ? '?' : `$${v}`);
   return `Pricing: ${fmt(p.input)}/M input · ${fmt(p.output)}/M output`;
+}
+
+function reasoningEffortSchema(m: ResolvedModel): object {
+  const efforts = m.reasoningEfforts?.length ? m.reasoningEfforts : [...REASONING_EFFORTS];
+  const fallback = efforts[0] ?? 'medium';
+  const dflt = m.defaultReasoningEffort && efforts.includes(m.defaultReasoningEffort) ? m.defaultReasoningEffort : fallback;
+  return {
+    type: 'object',
+    properties: {
+      reasoningEffort: {
+        type: 'string',
+        enum: efforts,
+        default: dflt,
+        description: '思考强度（reasoning effort），由 My LLM 透传给模型 API',
+      },
+    },
+  };
 }
 
 function metaPricing(m?: ModelMetadata): ModelPricing | undefined {

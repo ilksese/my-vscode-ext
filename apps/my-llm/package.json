@@ -122,6 +122,35 @@
                           "description": "输出价格，$/1M tokens"
                         }
                       }
+                    },
+                    "defaultReasoningEffort": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "minimal",
+                        "low",
+                        "medium",
+                        "high",
+                        "xhigh",
+                        "max"
+                      ],
+                      "description": "默认思考强度，作为模型配置中 reasoningEffort 的默认值；请求时可被模型配置覆盖，缺省不发送该参数"
+                    },
+                    "reasoningEfforts": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "none",
+                          "minimal",
+                          "low",
+                          "medium",
+                          "high",
+                          "xhigh",
+                          "max"
+                        ]
+                      },
+                      "description": "该模型有效的思考强度档位，展示为模型配置中 reasoningEffort 的可选项；缺省为全量 7 档"
                     }
                   }
                 }
