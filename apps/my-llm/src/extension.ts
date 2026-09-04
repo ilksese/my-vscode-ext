@@ -49,6 +49,7 @@ class LLMProvider implements ProviderType {
   readonly onDidChangeLanguageModelChatInformation: vscode.Event<void> = this.onChange.event;
 
   private readonly toolNames = new Map<string, string>();
+  private readonly pendingToolNames = new Set<string>();
 
   constructor() {
     vscode.workspace.onDidChangeConfiguration((e) => {
@@ -114,6 +115,24 @@ class LLMProvider implements ProviderType {
       throw new Error(`No configured provider for model "${model.id}"`);
     }
 
+    const controller = new AbortController();
+    const cancelSub = token.onCancellationRequested(() => controller.abort());
+    try {
+      await this.streamResponse(m, messages, options, progress, controller.signal);
+    } finally {
+      cancelSub.dispose();
+      for (const id of this.pendingToolNames) this.toolNames.delete(id);
+      this.pendingToolNames.clear();
+    }
+  }
+
+  private async streamResponse(
+    m: ResolvedModel,
+    messages: readonly vscode.LanguageModelChatRequestMessage[],
+    options: vscode.ProvideLanguageModelChatResponseOptions,
+    progress: vscode.Progress<vscode.LanguageModelResponsePart>,
+    signal: AbortSignal
+  ): Promise<void> {
     const tools: ToolSet = {};
     for (const t of options.tools ?? []) {
       tools[t.name] = tool({
@@ -127,16 +146,16 @@ class LLMProvider implements ProviderType {
       messages: this.toSDKMessages(messages),
       tools: Object.keys(tools).length ? tools : undefined,
       toolChoice: options.toolMode === vscode.LanguageModelChatToolMode.Required ? 'required' : undefined,
-      abortSignal: token.isCancellationRequested ? AbortSignal.abort() : AbortSignal.timeout(120000),
+      abortSignal: signal,
     });
 
     for await (const part of result.fullStream) {
-      if (token.isCancellationRequested) break;
       if (part.type === 'text-delta') {
         progress.report(new vscode.LanguageModelTextPart(part.text));
       } else if (part.type === 'tool-call') {
         const call = part as unknown as { toolCallId: string; toolName: string; input?: unknown };
         this.toolNames.set(call.toolCallId, call.toolName);
+        this.pendingToolNames.add(call.toolCallId);
         progress.report(new vscode.LanguageModelToolCallPart(call.toolCallId, call.toolName, call.input ?? {}));
       }
     }
