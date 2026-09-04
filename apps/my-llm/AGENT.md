@@ -27,9 +27,9 @@ pnpm package          # vsce package -> my-llm-0.0.1.vsix
     "id": "my-openai",
     "baseUrl": "https://api.openai.com/v1",
     "apiKey": "sk-...",
-    "models": [{ "id": "gpt-4o-mini" }],
-    "toolCalling": true
+    "models": [{ "id": "gpt-4o-mini", "toolCalling": true }]
   }
 ]
 ```
 `apiProtocol` 未设置时兜底为 `openai`；可在 provider 与 model 两层设置（model 优先）。
+上下文大小（`maxInputTokens`/`maxOutputTokens`）、能力（`toolCalling`/`imageInput`）与 `pricing` 是模型级配置，只能配在 model 上。

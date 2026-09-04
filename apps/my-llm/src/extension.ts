@@ -12,6 +12,16 @@ interface ModelConfig {
   family?: string;
   version?: string;
   apiProtocol?: ApiProtocol;
+  maxInputTokens?: number;
+  maxOutputTokens?: number;
+  toolCalling?: boolean;
+  imageInput?: boolean;
+  pricing?: ModelPricing;
+}
+
+interface ModelPricing {
+  input?: number;
+  output?: number;
 }
 
 interface ProviderConfig {
@@ -21,16 +31,13 @@ interface ProviderConfig {
   apiKey: string;
   apiProtocol?: ApiProtocol;
   models: ModelConfig[];
-  maxInputTokens?: number;
-  maxOutputTokens?: number;
-  toolCalling?: boolean;
-  imageInput?: boolean;
 }
 
 interface ResolvedModel {
   id: string;
   name: string;
   detail: string;
+  tooltip?: string;
   family: string;
   version: string;
   baseUrl: string;
@@ -71,15 +78,16 @@ class LLMProvider implements ProviderType {
           id: m.id,
           name: m.name ?? m.id,
           detail: p.name ?? p.id,
+          tooltip: pricingTooltip(m.pricing),
           family: m.family ?? m.id,
           version: m.version ?? '1.0.0',
           baseUrl: p.baseUrl,
           apiKey: p.apiKey,
           protocol: m.apiProtocol ?? p.apiProtocol ?? 'openai',
-          maxInputTokens: p.maxInputTokens ?? 128000,
-          maxOutputTokens: p.maxOutputTokens ?? 4096,
-          toolCalling: p.toolCalling ?? false,
-          imageInput: p.imageInput ?? false,
+          maxInputTokens: m.maxInputTokens ?? 128000,
+          maxOutputTokens: m.maxOutputTokens ?? 4096,
+          toolCalling: m.toolCalling ?? false,
+          imageInput: m.imageInput ?? false,
         });
       }
     }
@@ -95,6 +103,7 @@ class LLMProvider implements ProviderType {
       id: m.id,
       name: m.name,
       detail: m.detail,
+      tooltip: m.tooltip,
       family: m.family,
       version: m.version,
       capabilities: { toolCalling: m.toolCalling, imageInput: m.imageInput },
@@ -230,6 +239,12 @@ function sdkModel(m: ResolvedModel): LanguageModel {
 
 function sdkBaseURL(m: ResolvedModel): string {
   return m.baseUrl.replace(/\/+$/, '');
+}
+
+function pricingTooltip(p?: ModelPricing): string | undefined {
+  if (!p || (p.input === undefined && p.output === undefined)) return undefined;
+  const fmt = (v?: number) => (v === undefined ? '?' : `$${v}`);
+  return `Pricing: ${fmt(p.input)}/M input · ${fmt(p.output)}/M output`;
 }
 
 function toToolOutput(content: unknown[]): unknown {

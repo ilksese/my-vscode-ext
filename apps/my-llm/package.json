@@ -92,29 +92,39 @@
                         "openai-compatible"
                       ],
                       "description": "API 协议，覆盖 provider 层设置，缺省继承 provider"
+                    },
+                    "maxInputTokens": {
+                      "type": "integer",
+                      "description": "上下文大小：最大输入 token 数，缺省 128000"
+                    },
+                    "maxOutputTokens": {
+                      "type": "integer",
+                      "description": "最大输出 token 数，缺省 4096"
+                    },
+                    "toolCalling": {
+                      "type": "boolean",
+                      "description": "是否声明支持工具调用，缺省 false"
+                    },
+                    "imageInput": {
+                      "type": "boolean",
+                      "description": "是否声明支持图片输入，缺省 false"
+                    },
+                    "pricing": {
+                      "type": "object",
+                      "description": "每百万 token 价格（美元），显示在模型提示中",
+                      "properties": {
+                        "input": {
+                          "type": "number",
+                          "description": "输入价格，$/1M tokens"
+                        },
+                        "output": {
+                          "type": "number",
+                          "description": "输出价格，$/1M tokens"
+                        }
+                      }
                     }
                   }
                 }
-              },
-              "maxInputTokens": {
-                "type": "integer",
-                "default": 128000,
-                "description": "最大输入 token 数"
-              },
-              "maxOutputTokens": {
-                "type": "integer",
-                "default": 4096,
-                "description": "最大输出 token 数"
-              },
-              "toolCalling": {
-                "type": "boolean",
-                "default": false,
-                "description": "是否声明支持工具调用"
-              },
-              "imageInput": {
-                "type": "boolean",
-                "default": false,
-                "description": "是否声明支持图片输入"
               }
             }
           }
